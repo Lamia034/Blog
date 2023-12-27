@@ -13,6 +13,10 @@ public class User {
     private String id;
     private String userName;
     private String email;
-
+    private String password;
     private List<Article> articles;
+    private List<Comment> comments;
+    private List<ArticleReact> articleReacts;
+    private List<CommentReact> commentReacts;
+
 }

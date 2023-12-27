@@ -1,6 +1,7 @@
 package com.example.blog.entities;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,6 +14,7 @@ public class Comment {
     @Id
     private String id;
     private String text;
+    @CreatedDate
     private LocalDateTime postingTime;
     private Article article;
     private User user;

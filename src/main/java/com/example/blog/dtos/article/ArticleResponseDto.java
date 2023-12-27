@@ -15,7 +15,9 @@ public class ArticleResponseDto {
     private String id;
     private String title;
     private String text;
+    private String[] tags;
     private LocalDateTime postingTime;
+    private String postingTimeFormatted;
     private int nbComments;
     private int nbReacts;
     private User user;
