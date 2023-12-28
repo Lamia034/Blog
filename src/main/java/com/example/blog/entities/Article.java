@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -26,5 +27,6 @@ public class Article {
         private User user;
         private List<ArticleReact> articleReacts;
         private List<Comment> comments;
-        private List<Media> medias;
+    @DBRef(lazy = false)
+    private List<Media> medias;
     }

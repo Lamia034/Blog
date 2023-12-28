@@ -8,6 +8,6 @@ import lombok.Data;
 public class MediaDto {
     private String id;
     private String url;
-    private mediaType media;
+    private mediaType mediaType;
 //    private String articleId;
 }

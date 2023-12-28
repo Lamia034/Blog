@@ -1,5 +1,8 @@
 package com.example.blog.dtos.article;
 
+import com.example.blog.dtos.comment.CommentResponseDto;
+import com.example.blog.dtos.media.MediaDto;
+import com.example.blog.dtos.media.MediaResponseDto;
 import com.example.blog.entities.ArticleReact;
 import com.example.blog.entities.Comment;
 import com.example.blog.entities.Media;
@@ -18,10 +21,11 @@ public class ArticleResponseDto {
     private String[] tags;
     private LocalDateTime postingTime;
     private String postingTimeFormatted;
+    private String Status;
     private int nbComments;
     private int nbReacts;
     private User user;
     private List<ArticleReact> articleReacts;
-    private List<Comment> comments;
-    private List<Media> medias;
+    private List<CommentResponseDto> comments;
+    private List<MediaDto> medias;
 }

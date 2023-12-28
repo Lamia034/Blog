@@ -35,11 +35,31 @@ public class ArticleController {
         Pageable pageable = PageRequest.of(page, size);
         return articleService.getAll(pageable);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ArticleResponseDto>> searchArticles(@RequestParam String search) {
+        List<ArticleResponseDto> articleResponseDtos = articleService.searchArticles(search);
+        return ResponseEntity.ok(articleResponseDtos);
+    }
     @DeleteMapping("/{articleId}")
     public ResponseEntity<String> deleteArticle(@PathVariable String articleId) {
         boolean deleted = articleService.deleteArticleById(articleId);
         if (deleted) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Article deleted successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @PutMapping("/{articleId}")
+    public ResponseEntity<ArticleResponseDto> updateArticle(
+            @PathVariable String articleId,
+            @RequestBody ArticleDto updatedArticleDto) {
+
+        ArticleResponseDto updatedArticle = articleService.updateArticle(articleId, updatedArticleDto);
+
+        if (updatedArticle != null) {
+            return ResponseEntity.ok(updatedArticle);
         } else {
             return ResponseEntity.notFound().build();
         }

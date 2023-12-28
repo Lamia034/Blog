@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ArticleDto {
@@ -15,8 +16,9 @@ public class ArticleDto {
     private String title;
     private String text;
     private LocalDateTime postingTime;
-
     private String[] tags;
-    private mediaType media;
+  private String mediaId;
+//    private String[] mediaIds;
+//private List<String> mediaIds;
     private String userId;
 }

@@ -7,5 +7,5 @@ import lombok.Data;
 public class MediaResponseDto {
     private String id;
     private String url;
-    private mediaType media;
+    private mediaType mediaType;
 }

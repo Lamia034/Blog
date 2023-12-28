@@ -11,6 +11,6 @@ public class Media {
     @Id
     private String id;
     private String url;
-    private mediaType type;
+    private mediaType mediaType;
     private Article article;
 }

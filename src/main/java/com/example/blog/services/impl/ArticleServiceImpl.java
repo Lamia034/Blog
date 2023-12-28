@@ -2,36 +2,42 @@ package com.example.blog.services.impl;
 
 import com.example.blog.dtos.article.ArticleDto;
 import com.example.blog.dtos.article.ArticleResponseDto;
+import com.example.blog.dtos.media.MediaDto;
 import com.example.blog.entities.Article;
+import com.example.blog.entities.Media;
+import com.example.blog.enumerations.mediaType;
+import com.example.blog.exceptions.ResourceNotFoundException;
 import com.example.blog.repositories.ArticleRepository;
+import com.example.blog.repositories.MediaRepository;
 import com.example.blog.services.ArticleService;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
     private final ModelMapper modelMapper;
+    private final MediaRepository mediaRepository;
 
-    @Autowired
-    public ArticleServiceImpl(ArticleRepository articleRepository, ModelMapper modelMapper) {
+
+    public ArticleServiceImpl(ArticleRepository articleRepository,MediaRepository mediaRepository, ModelMapper modelMapper) {
         this.articleRepository = articleRepository;
         this.modelMapper = modelMapper;
+        this.mediaRepository = mediaRepository;
     }
 
     @Override
@@ -41,6 +47,13 @@ public class ArticleServiceImpl implements ArticleService {
 
             Article article = modelMapper.map(articleDto, Article.class);
             article.setPostingTime(LocalDateTime.now());
+
+            String mediaId = articleDto.getMediaId();
+            if (mediaId != null && !mediaId.isEmpty()) {
+                Media media = mediaRepository.findById(mediaId)
+                        .orElseThrow(() -> new RuntimeException("Media not found with id: " + mediaId));
+                article.setMedias(Collections.singletonList(media));
+            }
             Article savedArticle = articleRepository.save(article);
             return modelMapper.map(savedArticle, ArticleResponseDto.class);
         } catch (Exception e) {
@@ -107,5 +120,58 @@ public List<ArticleResponseDto> getAll(Pageable pageable) {
         }
     }
 
+@Override
+@Transactional
+public List<ArticleResponseDto> searchArticles(String search) {
+    List<Article> articles;
+    List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
+
+    if (search != null) {
+        articles = articleRepository.findByTagsContainingOrTextContainingOrTitleContaining(search, search, search);
+        for (Article article : articles) {
+            ArticleResponseDto articleResponseDto = modelMapper.map(article, ArticleResponseDto.class);
+            articleResponseDtos.add(articleResponseDto);
+        }
+    }
+
+    return articleResponseDtos;
+}
+
+
+
+    @Override
+    @Transactional
+    public ArticleResponseDto updateArticle(String articleId, ArticleDto updatedArticleDto) {
+        ObjectId objectId = new ObjectId(articleId);
+        Optional<Article> optionalArticle = articleRepository.findById(objectId);
+        if (optionalArticle.isPresent()) {
+            Article existingArticle = optionalArticle.get();
+
+            if (updatedArticleDto.getTitle() != null) {
+                existingArticle.setTitle(updatedArticleDto.getTitle());
+            }
+            if (updatedArticleDto.getText() != null) {
+                existingArticle.setText(updatedArticleDto.getText());
+            }
+            if (updatedArticleDto.getTags() != null) {
+                existingArticle.setTags(updatedArticleDto.getTags());
+            }
+            if (updatedArticleDto.getMediaId() != null) {
+                List<Media> mediaList = new ArrayList<>();
+
+                Media media = new Media();
+                media.setMediaType(mediaType.valueOf(updatedArticleDto.getMediaId()));
+                mediaList.add(media);
+
+                existingArticle.setMedias(mediaList);
+            }
+
+            Article updatedArticle = articleRepository.save(existingArticle);
+
+            return modelMapper.map(updatedArticle, ArticleResponseDto.class);
+        } else {
+            throw new ResourceNotFoundException("Article not found");
+        }
+    }
 
 }
