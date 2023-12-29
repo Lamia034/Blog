@@ -5,6 +5,7 @@ import com.example.blog.dtos.article.ArticleResponseDto;
 import com.example.blog.entities.Article;
 import com.example.blog.services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,7 @@ public class ArticleController {
 
         private final ArticleService articleService;
 
-        @Autowired
+
         public ArticleController(ArticleService articleService) {
             this.articleService = articleService;
         }
@@ -35,11 +36,21 @@ public class ArticleController {
         Pageable pageable = PageRequest.of(page, size);
         return articleService.getAll(pageable);
     }
-    @GetMapping("/search")
-    public ResponseEntity<List<ArticleResponseDto>> searchArticles(@RequestParam String search) {
-        List<ArticleResponseDto> articleResponseDtos = articleService.searchArticles(search);
-        return ResponseEntity.ok(articleResponseDtos);
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<List<ArticleResponseDto>> searchArticles(@RequestParam String search) {
+//        List<ArticleResponseDto> articleResponseDtos = articleService.searchArticles(search);
+//        return ResponseEntity.ok(articleResponseDtos);
+//    }
+@GetMapping("/search")
+public ResponseEntity<List<ArticleResponseDto>> searchArticles(@RequestParam String search,
+                                                               @RequestParam int page,
+                                                               @RequestParam int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    List<ArticleResponseDto> articleResponsePage = articleService.searchArticles(search, pageable);
+
+    return ResponseEntity.ok(articleResponsePage);
+}
+
     @DeleteMapping("/{articleId}")
     public ResponseEntity<String> deleteArticle(@PathVariable String articleId) {
         boolean deleted = articleService.deleteArticleById(articleId);

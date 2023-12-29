@@ -12,8 +12,8 @@ public class User {
     @Id
     private String id;
     private String userName;
-    private String email;
     private String password;
+    private String email;
     private List<Article> articles;
     private List<Comment> comments;
     private List<ArticleReact> articleReacts;

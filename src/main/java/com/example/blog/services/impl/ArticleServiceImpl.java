@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +64,43 @@ public class ArticleServiceImpl implements ArticleService {
 
 @Override
 @Transactional
+//public List<ArticleResponseDto> getAll(Pageable pageable) {
+//    try {
+//        Page<Article> articlePage = articleRepository.findAll(pageable);
+//        List<Article> articles = articlePage.getContent();
+//        List<ArticleResponseDto> responseDtoList = new ArrayList<>();
+//
+//        for (Article article : articles) {
+//            LocalDateTime postingTime = article.getPostingTime();
+//            if (postingTime != null) {
+//                LocalDateTime currentDateTime = LocalDateTime.now();
+//                Duration duration = Duration.between(postingTime, currentDateTime);
+//
+//                String timeDifference;
+//                if (duration.toHours() >= 2) {
+//                    timeDifference = duration.toHours() + " hours ago";
+//                } else if (duration.toHours() >= 1) {
+//                    timeDifference = "1 hour ago";
+//                } else if (duration.toMinutes() >= 2) {
+//                    timeDifference = duration.toMinutes() + " minutes ago";
+//                } else if (duration.toMinutes() >= 1) {
+//                    timeDifference = "1 minute ago";
+//                } else {
+//                    timeDifference = "just now";
+//                }
+//
+//                ArticleResponseDto responseDto = modelMapper.map(article, ArticleResponseDto.class);
+//                responseDto.setPostingTimeFormatted(timeDifference);
+//                responseDtoList.add(responseDto);
+//            }
+//        }
+//
+//        return responseDtoList;
+//    } catch (Exception e) {
+//        throw new RuntimeException("Failed to retrieve articles: " + e.getMessage(), e);
+//    }
+//}
+
 public List<ArticleResponseDto> getAll(Pageable pageable) {
     try {
         Page<Article> articlePage = articleRepository.findAll(pageable);
@@ -76,7 +114,11 @@ public List<ArticleResponseDto> getAll(Pageable pageable) {
                 Duration duration = Duration.between(postingTime, currentDateTime);
 
                 String timeDifference;
-                if (duration.toHours() >= 2) {
+                if (duration.toHours() >= 24) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                    String createdDate = postingTime.format(formatter);
+                    timeDifference = "Created: " + createdDate;
+                } else if (duration.toHours() >= 2) {
                     timeDifference = duration.toHours() + " hours ago";
                 } else if (duration.toHours() >= 1) {
                     timeDifference = "1 hour ago";
@@ -101,6 +143,7 @@ public List<ArticleResponseDto> getAll(Pageable pageable) {
 }
 
 
+
     @Override
     @Transactional
     public boolean deleteArticleById(String articleId) {
@@ -122,20 +165,110 @@ public List<ArticleResponseDto> getAll(Pageable pageable) {
 
 @Override
 @Transactional
-public List<ArticleResponseDto> searchArticles(String search) {
-    List<Article> articles;
-    List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
+//public List<ArticleResponseDto> searchArticles(String search) {
+//    List<Article> articles;
+//    List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
+//
+//    if (search != null) {
+//        articles = articleRepository.findByTagsContainingOrTextContainingOrTitleContaining(search, search, search);
+//        for (Article article : articles) {
+//            ArticleResponseDto articleResponseDto = modelMapper.map(article, ArticleResponseDto.class);
+//            articleResponseDtos.add(articleResponseDto);
+//        }
+//    }
+//
+//    return articleResponseDtos;
+//}
 
-    if (search != null) {
-        articles = articleRepository.findByTagsContainingOrTextContainingOrTitleContaining(search, search, search);
-        for (Article article : articles) {
-            ArticleResponseDto articleResponseDto = modelMapper.map(article, ArticleResponseDto.class);
-            articleResponseDtos.add(articleResponseDto);
+
+public List<ArticleResponseDto> searchArticles(String search, Pageable pageable) {
+    try {
+        List<ArticleResponseDto> responseDtoList = new ArrayList<>();
+
+        if (search != null) {
+            Page<Article> articlesPage = articleRepository.findByTagsContainingOrTextContainingOrTitleContaining(
+                    search, search, search, pageable);
+
+            List<Article> articles = articlesPage.getContent();
+
+            for (Article article : articles) {
+                LocalDateTime postingTime = article.getPostingTime();
+                if (postingTime != null) {
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    Duration duration = Duration.between(postingTime, currentDateTime);
+
+                    String timeDifference;
+                    if (duration.toHours() >= 24) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                        String createdDate = postingTime.format(formatter);
+                        timeDifference = "Created: " + createdDate;
+                    } else if (duration.toHours() >= 2) {
+                        timeDifference = duration.toHours() + " hours ago";
+                    } else if (duration.toHours() >= 1) {
+                        timeDifference = "1 hour ago";
+                    } else if (duration.toMinutes() >= 2) {
+                        timeDifference = duration.toMinutes() + " minutes ago";
+                    } else if (duration.toMinutes() >= 1) {
+                        timeDifference = "1 minute ago";
+                    } else {
+                        timeDifference = "just now";
+                    }
+
+                    ArticleResponseDto responseDto = modelMapper.map(article, ArticleResponseDto.class);
+                    responseDto.setPostingTimeFormatted(timeDifference);
+                    responseDtoList.add(responseDto);
+                }
+            }
         }
-    }
 
-    return articleResponseDtos;
+        return responseDtoList;
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to search articles: " + e.getMessage(), e);
+    }
 }
+
+
+//public List<ArticleResponseDto> searchArticles(String search, Pageable pageable) {
+//    try {
+//        List<ArticleResponseDto> responseDtoList = new ArrayList<>();
+//
+//        if (search != null) {
+//            Page<Article> articlesPage = articleRepository.findByTagsContainingOrTextContainingOrTitleContaining(
+//                    search, search, search, pageable);
+//
+//            List<Article> articles = articlesPage.getContent();
+//
+//            for (Article article : articles) {
+//                LocalDateTime postingTime = article.getPostingTime();
+//                if (postingTime != null) {
+//                    LocalDateTime currentDateTime = LocalDateTime.now();
+//                    Duration duration = Duration.between(postingTime, currentDateTime);
+//
+//                    String timeDifference;
+//                    if (duration.toHours() >= 2) {
+//                        timeDifference = duration.toHours() + " hours ago";
+//                    } else if (duration.toHours() >= 1) {
+//                        timeDifference = "1 hour ago";
+//                    } else if (duration.toMinutes() >= 2) {
+//                        timeDifference = duration.toMinutes() + " minutes ago";
+//                    } else if (duration.toMinutes() >= 1) {
+//                        timeDifference = "1 minute ago";
+//                    } else {
+//                        timeDifference = "just now";
+//                    }
+//
+//                    ArticleResponseDto responseDto = modelMapper.map(article, ArticleResponseDto.class);
+//                    responseDto.setPostingTimeFormatted(timeDifference);
+//                    responseDtoList.add(responseDto);
+//                }
+//            }
+//        }
+//
+//        return responseDtoList;
+//    } catch (Exception e) {
+//        throw new RuntimeException("Failed to search articles: " + e.getMessage(), e);
+//    }
+//}
 
 
 
